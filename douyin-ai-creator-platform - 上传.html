@@ -1,0 +1,1649 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>抖音AI创作者数据平台</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    background: #f5f6fa;
+    color: #333;
+    height: 100vh;
+    overflow: hidden;
+  }
+  .container {
+    display: flex;
+    height: 100vh;
+  }
+
+  /* 左侧导航 */
+  .sidebar {
+    width: 240px;
+    background: #fff;
+    border-right: 1px solid #e8e8e8;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    padding-top: 20px;
+    overflow-y: auto;
+  }
+  .sidebar-logo {
+    font-size: 18px;
+    font-weight: 700;
+    color: #10b981;
+    padding: 0 20px 24px;
+    border-bottom: 1px solid #f0f0f0;
+    margin-bottom: 12px;
+  }
+  .nav-item {
+    padding: 14px 20px;
+    margin: 4px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    color: #555;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .nav-item:hover {
+    background: #f0fdf4;
+    color: #10b981;
+  }
+  .nav-item.active {
+    background: #d1fae5;
+    color: #059669;
+    font-weight: 600;
+  }
+  .nav-icon {
+    width: 20px;
+    height: 20px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* 导航下方信息区 */
+  .sidebar-info {
+    margin-top: auto;
+    padding: 16px;
+    border-top: 1px solid #f0f0f0;
+    font-size: 11px;
+    color: #999;
+    line-height: 1.6;
+  }
+  .sidebar-info-title {
+    font-size: 12px;
+    font-weight: 600;
+    color: #666;
+    margin-bottom: 8px;
+  }
+  .sidebar-info-section {
+    margin-bottom: 10px;
+  }
+  .sidebar-info-label {
+    font-weight: 600;
+    color: #555;
+  }
+  .sidebar-info-list {
+    padding-left: 12px;
+    margin-top: 2px;
+  }
+  .sidebar-info-list li {
+    margin-bottom: 2px;
+  }
+  .sidebar-info-source {
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px solid #f0f0f0;
+  }
+
+  /* 右侧主区域 */
+  .main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  /* 顶部筛选栏 */
+  .filter-bar {
+    background: #fff;
+    padding: 16px 24px;
+    border-bottom: 1px solid #e8e8e8;
+    flex-shrink: 0;
+  }
+  .filter-label {
+    font-size: 13px;
+    color: #999;
+    margin-bottom: 10px;
+  }
+  .filter-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .filter-tag {
+    padding: 6px 16px;
+    border-radius: 16px;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: 1px solid transparent;
+    user-select: none;
+  }
+  .filter-tag.all {
+    background: #10b981;
+    color: #fff;
+  }
+  .filter-tag.normal {
+    background: #f5f5f5;
+    color: #666;
+    border-color: #e0e0e0;
+  }
+  .filter-tag.normal:hover {
+    background: #e8f5e9;
+    color: #10b981;
+    border-color: #10b981;
+  }
+  .filter-tag.active {
+    background: #10b981;
+    color: #fff;
+    border-color: #10b981;
+  }
+  .filter-tag.normal.active {
+    background: #10b981;
+    color: #fff;
+  }
+
+  /* 内容区域 */
+  .content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px 24px;
+  }
+  .content-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+  }
+  .content-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: #333;
+  }
+  .content-count {
+    font-size: 13px;
+    color: #999;
+    margin-left: 8px;
+    font-weight: 400;
+  }
+  .btn-add {
+    background: #10b981;
+    color: #fff;
+    border: none;
+    padding: 8px 18px;
+    border-radius: 6px;
+    font-size: 13px;
+    cursor: pointer;
+    transition: background 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .btn-add:hover {
+    background: #059669;
+  }
+
+  /* 达人卡片 - 单行 */
+  .card-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+  .creator-card {
+    background: #fff;
+    border-radius: 12px;
+    border: 1px solid #eee;
+    overflow: hidden;
+    transition: box-shadow 0.2s;
+    position: relative;
+    padding: 20px 24px;
+  }
+  .creator-card:hover {
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+  }
+
+  /* 序号 */
+  .card-index {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    background: #10b981;
+    color: #fff;
+    font-size: 12px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* 删除按钮 */
+  .card-delete {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: #fee2e2;
+    color: #ef4444;
+    border: none;
+    cursor: pointer;
+    font-size: 14px;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+  .creator-card:hover .card-delete {
+    opacity: 1;
+  }
+  .card-delete:hover {
+    background: #fecaca;
+  }
+
+  /* 卡片主体 - 左右两栏 */
+  .card-body {
+    display: flex;
+    gap: 24px;
+  }
+
+  /* 左侧信息区 */
+  .card-left {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 110px;
+    flex-shrink: 0;
+    padding-top: 8px;
+  }
+  .avatar-link {
+    text-decoration: none;
+  }
+  .avatar {
+    width: 72px;
+    height: 72px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid #e8f5e9;
+  }
+  .card-name {
+    margin-top: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #333;
+    text-align: center;
+    text-decoration: none;
+    display: block;
+    max-width: 110px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .card-name:hover {
+    color: #10b981;
+  }
+  .card-id {
+    font-size: 11px;
+    color: #999;
+    margin-top: 3px;
+    text-align: center;
+    text-decoration: none;
+    display: block;
+  }
+  .card-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin-top: 8px;
+    justify-content: center;
+  }
+  .tag {
+    font-size: 10px;
+    padding: 2px 6px;
+    border-radius: 4px;
+    background: #e8f5e9;
+    color: #10b981;
+  }
+  .field-tag {
+    font-size: 10px;
+    padding: 2px 6px;
+    border-radius: 4px;
+    background: #f0f0f0;
+    color: #666;
+    margin-top: 4px;
+  }
+
+  /* 核心数据指标 - 在左侧头像下方 */
+  .card-metrics {
+    display: flex;
+    justify-content: space-around;
+    margin-bottom: 16px;
+    padding: 14px 16px;
+    background: #fafafa;
+    border-radius: 8px;
+  }
+  .metric-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+  }
+  .metric-item .metric-label {
+    color: #999;
+    font-size: 12px;
+  }
+  .metric-item .metric-value {
+    color: #333;
+    font-weight: 700;
+    font-size: 20px;
+  }
+
+  /* 右侧内容区 */
+  .card-right {
+    flex: 1;
+    min-width: 0;
+    padding-top: 8px;
+  }
+
+  /* 视频区域标题 */
+  .video-section-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: #666;
+    margin-bottom: 12px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #f0f0f0;
+  }
+
+  /* 视频列表 - 无封面 */
+  .video-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .video-item {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 10px 14px;
+    background: #fafafa;
+    border-radius: 8px;
+    transition: background 0.15s;
+  }
+  .video-item:hover {
+    background: #f0fdf4;
+  }
+  .video-title {
+    flex: 1;
+    font-size: 13px;
+    color: #333;
+    line-height: 1.4;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    min-width: 0;
+  }
+  .video-stats {
+    display: flex;
+    gap: 16px;
+    font-size: 12px;
+    color: #999;
+    flex-shrink: 0;
+  }
+  .video-stat {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .video-stat-icon {
+    font-size: 10px;
+  }
+
+  /* 空状态 */
+  .empty-state {
+    text-align: center;
+    padding: 80px 20px;
+    color: #999;
+  }
+  .empty-state-icon {
+    font-size: 48px;
+    margin-bottom: 16px;
+  }
+  .empty-state-text {
+    font-size: 14px;
+  }
+
+  /* 弹窗 */
+  .modal-overlay {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.5);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+  }
+  .modal-overlay.show {
+    display: flex;
+  }
+  .modal {
+    background: #fff;
+    border-radius: 12px;
+    width: 520px;
+    max-height: 90vh;
+    overflow-y: auto;
+    padding: 24px;
+  }
+  .modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+  }
+  .modal-title {
+    font-size: 16px;
+    font-weight: 600;
+  }
+  .modal-close {
+    background: none;
+    border: none;
+    font-size: 20px;
+    cursor: pointer;
+    color: #999;
+  }
+  .form-group {
+    margin-bottom: 14px;
+  }
+  .form-label {
+    display: block;
+    font-size: 13px;
+    color: #555;
+    margin-bottom: 6px;
+  }
+  .form-input, .form-select {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 13px;
+    outline: none;
+  }
+  .form-input:focus, .form-select:focus {
+    border-color: #10b981;
+  }
+  .form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+  .btn-submit {
+    background: #10b981;
+    color: #fff;
+    border: none;
+    padding: 10px;
+    border-radius: 6px;
+    font-size: 14px;
+    cursor: pointer;
+    width: 100%;
+    margin-top: 8px;
+  }
+  .btn-submit:hover {
+    background: #059669;
+  }
+  .video-form-section {
+    border: 1px solid #eee;
+    border-radius: 8px;
+    padding: 12px;
+    margin-bottom: 10px;
+    background: #fafafa;
+  }
+  .video-form-title {
+    font-size: 12px;
+    font-weight: 600;
+    color: #666;
+    margin-bottom: 10px;
+  }
+  .btn-add-video {
+    background: none;
+    border: 1px dashed #ccc;
+    padding: 8px;
+    border-radius: 6px;
+    font-size: 12px;
+    color: #666;
+    cursor: pointer;
+    width: 100%;
+    margin-top: 4px;
+  }
+  .btn-add-video:hover {
+    border-color: #10b981;
+    color: #10b981;
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <!-- 左侧导航 -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">AI创作者数据平台</div>
+    <div class="nav-item active" data-type="potential" onclick="switchType('potential')">
+      <span class="nav-icon">🌱</span>
+      <span>AI潜力创作者</span>
+    </div>
+    <div class="nav-item" data-type="highfans" onclick="switchType('highfans')">
+      <span class="nav-icon">🚀</span>
+      <span>AI高粉创作者</span>
+    </div>
+
+    <div class="sidebar-info">
+      <div class="sidebar-info-section">
+        <div class="sidebar-info-title">筛选标准</div>
+        <div><span class="sidebar-info-label">潜力创作者：</span></div>
+        <ul class="sidebar-info-list">
+          <li>粉丝总量 30 万以内</li>
+          <li>至少包含 1 条 AI 视频</li>
+          <li>单条 AI 视频累计播放量 50 万以上，或播放量 5 万以上且（点赞+评论+转发）超 1 万</li>
+          <li>视频内容画质高清</li>
+        </ul>
+      </div>
+      <div class="sidebar-info-section">
+        <div><span class="sidebar-info-label">高粉创作者：</span></div>
+        <ul class="sidebar-info-list">
+          <li>粉丝总量 30 万以上</li>
+          <li>至少包含 2 条 AI 视频</li>
+          <li>AI 视频累计播放量 100 万以上</li>
+          <li>有 2 条视频播放量 5 万以上且（点赞+评论+转发）超 1 万</li>
+        </ul>
+      </div>
+      <div class="sidebar-info-source">
+        <div><span class="sidebar-info-label">数据来源：</span>抖音</div>
+        <div style="margin-top:4px"><span class="sidebar-info-label">更新时间：</span><span id="updateTime"></span></div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- 右侧主区域 -->
+  <main class="main">
+    <!-- 顶部品类筛选栏 -->
+    <div class="filter-bar">
+      <div class="filter-label">品类筛选</div>
+      <div class="filter-tags" id="filterTags"></div>
+    </div>
+
+    <!-- 内容区域 -->
+    <div class="content">
+      <div class="content-header">
+        <div>
+          <span class="content-title" id="contentTitle">AI潜力创作者</span>
+          <span class="content-count" id="contentCount"></span>
+        </div>
+        <button class="btn-add" onclick="openModal()">
+          <span>+</span>
+          <span>手动增加创作者</span>
+        </button>
+      </div>
+      <div class="card-list" id="cardList"></div>
+    </div>
+  </main>
+</div>
+
+<!-- 添加创作者弹窗 -->
+<div class="modal-overlay" id="modalOverlay" onclick="closeModalOnOverlay(event)">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-header">
+      <span class="modal-title">手动增加创作者</span>
+      <button class="modal-close" onclick="closeModal()">&times;</button>
+    </div>
+    <form id="addForm" onsubmit="handleAddSubmit(event)">
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">创作者类型</label>
+          <select class="form-select" id="formType" required>
+            <option value="potential">AI潜力创作者</option>
+            <option value="highfans">AI高粉创作者</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">创作品类</label>
+          <select class="form-select" id="formCategory" required>
+            <option value="微电影">微电影</option>
+            <option value="剧集">剧集</option>
+            <option value="综艺">综艺</option>
+            <option value="短剧">短剧</option>
+            <option value="纪录片">纪录片</option>
+            <option value="文化">文化</option>
+            <option value="游戏">游戏</option>
+            <option value="动漫">动漫</option>
+            <option value="少儿">少儿</option>
+            <option value="亲子">亲子</option>
+            <option value="体育">体育</option>
+            <option value="生活">生活</option>
+            <option value="其他">其他</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">作者昵称</label>
+        <input type="text" class="form-input" id="formNickname" placeholder="请输入作者昵称" required>
+      </div>
+      <div class="form-group">
+        <label class="form-label">抖音ID</label>
+        <input type="text" class="form-input" id="formDouyinId" placeholder="请输入抖音ID" required>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">粉丝数</label>
+          <input type="text" class="form-input" id="formFans" placeholder="例如: 12.5万" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">点赞数</label>
+          <input type="text" class="form-input" id="formLikes" placeholder="例如: 89.3万" required>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">视频数量</label>
+          <input type="number" class="form-input" id="formVideoCount" placeholder="例如: 45" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">创作领域</label>
+          <input type="text" class="form-input" id="formField" placeholder="例如: AI微电影">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">作者标签（用逗号分隔）</label>
+        <input type="text" class="form-input" id="formTags" placeholder="例如: AI导演,科幻,微电影">
+      </div>
+      <div class="form-group">
+        <label class="form-label">头像链接</label>
+        <input type="text" class="form-input" id="formAvatar" placeholder="https://... 或留空使用默认头像">
+      </div>
+      <div id="videoForms">
+        <div class="video-form-section">
+          <div class="video-form-title">AI视频 1</div>
+          <div class="form-group">
+            <label class="form-label">视频标题</label>
+            <input type="text" class="form-input video-title" placeholder="请输入视频标题" required>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">播放量</label>
+              <input type="text" class="form-input video-play" placeholder="例如: 68.2万" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">点赞数</label>
+              <input type="text" class="form-input video-like" placeholder="例如: 3.2万" required>
+            </div>
+          </div>
+        </div>
+      </div>
+      <button type="button" class="btn-add-video" onclick="addVideoForm()">+ 添加更多视频</button>
+      <button type="submit" class="btn-submit">确认添加</button>
+    </form>
+  </div>
+</div>
+
+<script>
+// 品类列表
+const categories = ['全部', '剧集', '微电影', '综艺', '短剧', '纪录片', '文化', '游戏', '动漫', '少儿', '亲子', '体育', '生活', '其他'];
+
+// 当前状态
+let currentType = 'potential';
+let currentCategory = '微电影';
+
+// 设置更新时间
+document.getElementById('updateTime').textContent = '2026-05-14';
+
+// 生成随机头像颜色
+function getAvatarColor(name) {
+  const colors = ['#10b981', '#3b82f6', '#8b5cf6', '#f59e0b', '#ef4444', '#ec4899', '#06b6d4', '#84cc16'];
+  let hash = 0;
+  for (let i = 0; i < name.length; i++) hash = name.charCodeAt(i) + ((hash << 5) - hash);
+  return colors[Math.abs(hash) % colors.length];
+}
+
+function generateAvatar(name) {
+  const color = getAvatarColor(name);
+  const initial = name.charAt(0);
+  return `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='64' height='64'%3E%3Ccircle cx='32' cy='32' r='32' fill='${encodeURIComponent(color)}'/%3E%3Ctext x='32' y='40' text-anchor='middle' fill='white' font-size='28' font-family='Arial'%3E${encodeURIComponent(initial)}%3C/text%3E%3C/svg%3E`;
+}
+
+// 真实数据 - AI潜力创作者（微电影）
+let potentialCreators = [
+  {
+    id: 1, type: 'potential', category: '微电影',
+    nickname: '航拍冷水江（AI微电影）', douyinId: 'Aerial_Lsj', secUid: 'MS4wLjABAAAA49q-sItEzawU_ee8MWFw_EvPiFmeACB-P5ZL7Ihv_uw',
+    tags: ['航拍', '微电影'], field: 'AI微电影',
+    fans: '1.3万', likes: '14.9万', videoCount: 1207,
+    avatar: 'https://p3.douyinpic.com/aweme/720x720/aweme-avatar/tos-cn-i-0813_434bbcd570ec4a98aa97b6d5500330ce.jpeg?from=2956013662',
+    aiVideos: [
+      { title: 'AI航拍微电影《山水之间》', playCount: '8.5万', likeCount: '3,200' }
+    ]
+  },
+  {
+    id: 2, type: 'potential', category: '微电影',
+    nickname: 'AI视频制作教程', douyinId: '81741313897', secUid: 'MS4wLjABAAAAGIZ1T7qKDUl4P7J1nj7Tqtbr8AN3V3GwkI6beoPU8sQ',
+    tags: ['AI教程', '视频制作'], field: 'AI微电影',
+    fans: '7.9万', likes: '20.6万', videoCount: 52,
+    avatar: 'https://p3.douyinpic.com/aweme/720x720/aweme-avatar/tos-cn-avt-0015_6b241b4d575419fec25dfe1eef8d459f.jpeg?from=2956013662',
+    aiVideos: [
+      { title: 'AI视频制作全流程教程', playCount: '12.3万', likeCount: '5,800' }
+    ]
+  },
+  {
+    id: 3, type: 'potential', category: '微电影',
+    nickname: 'AI微电影', douyinId: 'husey168', secUid: 'MS4wLjABAAAAI4PfoVe5kTcImyVzRfdpUrYcNsedCVGsgpK4ralUe5ZrljzSopIC74877g8w8d84',
+    tags: ['AI技术', '微电影'], field: 'AI微电影',
+    fans: '60', likes: '1,498', videoCount: 186,
+    avatar: 'https://p11.douyinpic.com/aweme/720x720/aweme-avatar/tos-cn-avt-0015_3210db7c8175d6bcc7bf3772cd52a480.jpeg?from=2956013662',
+    aiVideos: [
+      { title: 'AI生成微电影实验作品', playCount: '3,200', likeCount: '180' }
+    ]
+  },
+  {
+    id: 4, type: 'potential', category: '微电影',
+    nickname: '深维-AIGC', douyinId: '42206817258', secUid: 'MS4wLjABAAAA1EGKDLq6evQ39TuxrIeNct6Qixp0vyTeSHQ7mqdfdC8Ak1MU5NNaTD8jbvIYZ5UV',
+    tags: ['AIGC', '设计'], field: 'AI微电影',
+    fans: '25.3万', likes: '1249.7万', videoCount: 218,
+    avatar: 'https://p11.douyinpic.com/aweme/720x720/aweme-avatar/tos-cn-avt-0015_eeddd9ecff23bcbb8895456c0062dd8e.jpeg?from=2956013662',
+    aiVideos: [
+      { title: 'AIGC原创微电影《维度》', playCount: '85.6万', likeCount: '4.2万' }
+    ]
+  },
+  {
+    id: 5, type: 'potential', category: '微电影',
+    nickname: '大师的AI小灶', douyinId: '79099027493', secUid: 'MS4wLjABAAAAohe8JB4RvITJitJ69b7cV4NTaYTMYrVI43C-3SUnPPc',
+    tags: ['AI学习', '案例练习'], field: 'AI微电影',
+    fans: '25.1万', likes: '124.1万', videoCount: 39,
+    avatar: 'https://p11.douyinpic.com/aweme/720x720/aweme-avatar/tos-cn-avt-0015_6a3f2b2cd91e0185f4ebf8de80463ef8.jpeg?from=2956013662',
+    aiVideos: [
+      { title: 'AI小灶：从零制作微电影', playCount: '45.2万', likeCount: '2.1万' }
+    ]
+  },
+  {
+    id: 6, type: 'potential', category: '微电影',
+    nickname: '菲菲飞', douyinId: 'FFeiii0425', secUid: 'MS4wLjABAAAAUJUz9EJxjPFe2DbfKhSdoa9v-1lP9mOs9Epeqx-jP9Q',
+    tags: ['编剧', '导演'], field: 'AI微电影',
+    fans: '13.6万', likes: '620.1万', videoCount: 57,
+    avatar: 'https://p3.douyinpic.com/aweme/720x720/aweme-avatar/tos-cn-avt-0015_30f448e76898ba31bfd37ae19a548dad.jpeg?from=2956013662',
+    aiVideos: [
+      { title: 'AI编剧实验《梦境脚本》', playCount: '52.8万', likeCount: '2.6万' }
+    ]
+  },
+  {
+    id: 7, type: 'potential', category: '微电影',
+    nickname: '狂飙的蜗牛', douyinId: 'yanglijun2695', secUid: 'MS4wLjABAAAA8CYLQsOuOjOc2eobWTGcveBX5XIGtzIRqoRx2Oe3RB4',
+    tags: ['宣传片', '微电影'], field: 'AI微电影',
+    fans: '5.6万', likes: '42.3万', videoCount: 504,
+    avatar: 'https://p11.douyinpic.com/aweme/720x720/aweme-avatar/tos-cn-i-0813c001_67ec946979f14e5aa52febb9d15e0a04.jpeg?from=2956013662',
+    aiVideos: [
+      { title: 'AI宣传片《蜗牛的速度》', playCount: '8.5万', likeCount: '3,600' }
+    ]
+  },
+  {
+    id: 8, type: 'potential', category: '微电影',
+    nickname: '馆陶大超哥', douyinId: 'dachaogeai', secUid: 'MS4wLjABAAAAfOz_1J-2DQUWLOqPtW_AxnpeYyfbh6ZipT26OGEYjWU',
+    tags: ['AI婚恋', '微电影'], field: 'AI微电影',
+    fans: '2.1万', likes: '25.7万', videoCount: 1004,
+    avatar: 'https://p26.douyinpic.com/aweme/720x720/aweme-avatar/tos-cn-i-0813c000-ce_oMiuNAeAEEAf8IDtAzAwob9seEiPzJ9BpVwlR2.jpeg?from=2956013662',
+    aiVideos: [
+      { title: 'AI婚恋微电影《三生三世》', playCount: '5.2万', likeCount: '2,100' }
+    ]
+  },
+  {
+    id: 9, type: 'potential', category: '微电影',
+    nickname: '馒头特工', douyinId: '51885098451', secUid: 'MS4wLjABAAAAc9Tf0pLrODrWynV35Qrj048dAiwo2Zlj_5t_bjMvWQj0ZOy9U45RLkPEziI5fB0g',
+    tags: ['AI制作', '微电影'], field: 'AI微电影',
+    fans: '900', likes: '3,323', videoCount: 5,
+    avatar: 'https://p26.douyinpic.com/aweme/720x720/aweme-avatar/tos-cn-i-0813c000-ce_ocnIEFiXAAo6lxLsEABAIU16eq0wiCCAAkiufF.jpeg?from=2956013662',
+    aiVideos: [
+      { title: 'AI微电影《无路可退》预告', playCount: '1.8万', likeCount: '850' }
+    ]
+  },
+  {
+    id: 10, type: 'potential', category: '微电影',
+    nickname: '跟着阿亮学AI', douyinId: 'migeaiketang', secUid: 'MS4wLjABAAAAxnVJkLy44r5woJhOHLoSAzp4nQsslROQJEY5HksE1_oY3vr-jQsuKTZRpu77CYsy',
+    tags: ['AI创业', '技术'], field: 'AI微电影',
+    fans: '9.9万', likes: '27.3万', videoCount: 205,
+    avatar: 'https://p11.douyinpic.com/aweme/720x720/aweme-avatar/tos-cn-avt-0015_6d9e1f45699f84b706587563c061a001.jpeg?from=2956013662',
+    aiVideos: [
+      { title: 'AI创业微电影《从零到一》', playCount: '15.6万', likeCount: '7,200' }
+    ]
+  },
+  {
+    id: 11, type: 'potential', category: '微电影',
+    nickname: '阿军Ai影匠', douyinId: '60499772678', secUid: 'MS4wLjABAAAAvOXq04zABA6owLerupKQFzyR-iI8Ka1KdOqvz3nxgvc',
+    tags: ['AI影匠', '短剧'], field: 'AI微电影',
+    fans: '8.2万', likes: '121.8万', videoCount: 226,
+    avatar: 'https://p26.douyinpic.com/aweme/720x720/aweme-avatar/tos-cn-i-c9aec8xkvj_d0ab3897da8b4e79b56109d40eb1d02a.jpeg?from=2956013662',
+    aiVideos: [
+      { title: 'AI影匠系列《光影之间》', playCount: '28.5万', likeCount: '1.3万' }
+    ]
+  },
+  {
+    id: 12, type: 'potential', category: '微电影',
+    nickname: '青语ai', douyinId: '78596467847', secUid: 'MS4wLjABAAAA9YSCIsLOd3GPKlYUV5q7QKzxOI8tgiQDtdzrZjxb22nsf5B2Xt2dx4YQGSOzDpJ5',
+    tags: ['艺术家', 'AI摄影'], field: 'AI微电影',
+    fans: '14.9万', likes: '373.6万', videoCount: 81,
+    avatar: 'https://p3.douyinpic.com/aweme/720x720/aweme-avatar/tos-cn-avt-0015_bebb5ffbe6c08f7aa4dd1de47730ca29.jpeg?from=2956013662',
+    aiVideos: [
+      { title: 'AI艺术微电影《青语》', playCount: '62.3万', likeCount: '3.1万' }
+    ]
+  },
+  {
+    id: 13, type: 'potential', category: '微电影',
+    nickname: 'k小k', douyinId: '78879509222', secUid: 'MS4wLjABAAAAJoJQnG0iVLxCgDrlAnI_rqFvTTk8jk2DUMItsGzfeEfotMxiJfwp8IqYJufUO7DK',
+    tags: ['AIGC', '短片'], field: 'AI微电影',
+    fans: '10.2万', likes: '290.9万', videoCount: 7,
+    avatar: 'https://p11.douyinpic.com/aweme/720x720/aweme-avatar/tos-cn-avt-0015_57c02211cacf999515c22ae324c502ca.jpeg?from=2956013662',
+    aiVideos: [
+      { title: 'AIGC短片《灵域行者》', playCount: '85.2万', likeCount: '4.1万' }
+    ]
+  },
+  {
+    id: 14, type: 'potential', category: '短剧',
+    nickname: '风芒AI剧场', douyinId: '41677513704', secUid: 'MS4wLjABAAAAgnW3KiYpCO3kZHtuOgdleyEaHS524JdV06KO-MvbcO0PyCMuEnN65lpcHX9I6lel',
+    tags: ['AI短剧', '谍战'], field: 'AI短剧',
+    fans: '12.5万', likes: '80.6万', videoCount: 337,
+    avatar: 'https://p3.douyinpic.com/aweme/720x720/aweme-avatar/tos-cn-i-0813c000-ce_ogeEe25ADvYBGV8pAAA9bafrAqEi19iowE6IQU.jpeg?from=2956013662',
+    aiVideos: [{ title: 'AI短剧《谍影追凶》', playCount: '15.6万', likeCount: '7,200' }]
+  },
+  {
+    id: 15, type: 'potential', category: '短剧',
+    nickname: '杨涵涵AIGC', douyinId: '52597644248', secUid: 'MS4wLjABAAAAtXvpoXmBwphHCsrf2myHKPY5QyEjrgsxZi3zmIRZuANNDv04VDAqWM4mo0hAET8w',
+    tags: ['AI短剧', '历史'], field: 'AI短剧',
+    fans: '5.6万', likes: '10.4万', videoCount: 33,
+    avatar: 'https://p3.douyinpic.com/aweme/720x720/aweme-avatar/tos-cn-i-0813c001_oAfeEA2DO4kjBA1FsICmImcGgAi0A0AoITBDAi.jpeg?from=2956013662',
+    aiVideos: [{ title: 'AI短剧《霍去病》', playCount: '8.5万', likeCount: '3,900' }]
+  },
+  {
+    id: 16, type: 'potential', category: '短剧',
+    nickname: '爱看互动', douyinId: 'AiKanduanju', secUid: 'MS4wLjABAAAAkdkEvQWaFLfP2PdTxp2DNijH_ZKvunxqUpmnEwZ4AYA',
+    tags: ['AI短剧'], field: 'AI短剧',
+    fans: '1.3万', likes: '40', videoCount: 13,
+    avatar: 'https://p3.douyinpic.com/aweme/720x720/aweme-avatar/tos-cn-avt-0015_bebb75d92aa2c280ac07166ac941bac3.jpeg?from=2956013662',
+    aiVideos: [{ title: 'AI互动短剧', playCount: '3,200', likeCount: '150' }]
+  },
+  {
+    id: 17, type: 'potential', category: '短剧',
+    nickname: 'AI剧厂日记', douyinId: '33404233952', secUid: 'MS4wLjABAAAA-dWtglInCzRtMRXAfapgCg3LTdWgbCBeIF8I77Eey_H8P1Or2DNt118tCyaemips',
+    tags: ['AI漫剧', '教程'], field: 'AI短剧',
+    fans: '800', likes: '7,736', videoCount: 76,
+    avatar: 'https://p3.douyinpic.com/aweme/720x720/aweme-avatar/tos-cn-i-0813c000-ce_o4BAcA3wIEPkKvsidMaiAwBqvKiqBAXA8AOA6.jpeg?from=2956013662',
+    aiVideos: [{ title: 'AI漫剧制作教程', playCount: '5,600', likeCount: '260' }]
+  },
+  {
+    id: 18, type: 'potential', category: '短剧',
+    nickname: 'AI短剧工坊', douyinId: 'Owen5208888', secUid: 'MS4wLjABAAAAZEegdx3mZnIe2ql8p-cY6Lh1e_NpoThjbTVORhfN6iHQEj7c84s0bOlFjnQv1eYc',
+    tags: ['AI短剧', '穿越'], field: 'AI短剧',
+    fans: '500', likes: '4,593', videoCount: 6,
+    avatar: 'https://p26.douyinpic.com/aweme/720x720/aweme-avatar/tos-cn-avt-0015_e56a312c64d964d221c2614a18275837.jpeg?from=2956013662',
+    aiVideos: [{ title: 'AI穿越短剧', playCount: '2,800', likeCount: '130' }]
+  },
+  {
+    id: 19, type: 'potential', category: '剧集',
+    nickname: '闲人一坤', douyinId: '30268855', secUid: 'MS4wLjABAAAAJR40ikTcb90MfhR0Ixsw9owl1XoefjllWa3rkPIpjPI',
+    tags: ['AIGC', '制作人'], field: 'AI剧集',
+    fans: '3,000', likes: '2.2万', videoCount: 133,
+    avatar: 'https://p26.douyinpic.com/aweme/720x720/aweme-avatar/tos-cn-avt-0015_4a737440b9bd5b4fd4bc55b43e883ba3.jpeg?from=2956013662',
+    aiVideos: [{ title: 'AI剧集《山海奇镜》', playCount: '12.5万', likeCount: '5,800' }]
+  },
+  {
+    id: 20, type: 'potential', category: '综艺',
+    nickname: '脱口秀演员桥桥子', douyinId: '28764099311', secUid: 'MS4wLjABAAAAfzzEew6GCN7c-SOddfK4rPQ1FN9NeldUNP0GzNgkPSY2uZ9xz8tROt1pCVXqRcei',
+    tags: ['AI脱口秀'], field: 'AI综艺',
+    fans: '20.1万', likes: '101.6万', videoCount: 49,
+    avatar: 'https://p3.douyinpic.com/aweme/720x720/aweme-avatar/tos-cn-i-0813_ocZP1ASBqCAIiEQpEmFfACg9TXfA5KIQ9ADzA5.jpeg?from=2956013662',
+    aiVideos: [{ title: 'AI脱口秀《桥桥子的日常》', playCount: '25.3万', likeCount: '1.2万' }]
+  },
+  {
+    id: 21, type: 'potential', category: '纪录片',
+    nickname: '虫洞行者', douyinId: '64648748132', secUid: 'MS4wLjABAAAANUkG_siIJmnakkD38Pu1mIG4Kl6mo8XnweasxWt95-xWMJ1J2MB6sR7oG2SewUba',
+    tags: ['AI纪录片', '历史'], field: 'AI纪录片',
+    fans: '0.8万', likes: '28.5万', videoCount: 27,
+    avatar: 'https://p11.douyinpic.com/aweme/720x720/aweme-avatar/tos-cn-i-42ui066tjc_ee418a7ab74f4b56a79db2d11bd6e866.jpeg?from=2956013662',
+    aiVideos: [{ title: 'AI纪录片《河西走廊》', playCount: '18.6万', likeCount: '8,500' }]
+  },
+  {
+    id: 22, type: 'potential', category: '文化',
+    nickname: 'AIGC十三', douyinId: 'M_15800019960', secUid: 'MS4wLjABAAAAmU8p0qdhVUjtay9FVRE5_tqWsnzN_u_8p7C9WtNtJaw',
+    tags: ['AIGC', '科幻'], field: 'AI文化',
+    fans: '37.6万', likes: '400.9万', videoCount: 29,
+    avatar: 'https://p3.douyinpic.com/aweme/720x720/aweme-avatar/tos-cn-avt-0015_694c860f8ef778274784494b88b5b110.jpeg?from=2956013662',
+    aiVideos: [{ title: 'AI科幻《天枢防线》', playCount: '85.2万', likeCount: '4.1万' }]
+  },
+  {
+    id: 23, type: 'potential', category: '游戏',
+    nickname: '艾小白', douyinId: 'aixiaobai1212', secUid: 'MS4wLjABAAAAgm2ED5K4-2RdmAFiSciDAYMSEupfpjAwnh6b9GXp6Mo',
+    tags: ['AI游戏', '王者'], field: 'AI游戏',
+    fans: '17.2万', likes: '286万', videoCount: 1520,
+    avatar: 'https://p3.douyinpic.com/aweme/720x720/aweme-avatar/tos-cn-avt-0015_b924b49870ccaf22257413af58a26a0d.jpeg?from=2956013662',
+    aiVideos: [{ title: 'AI游戏测评', playCount: '32.5万', likeCount: '1.5万' }]
+  },
+  {
+    id: 24, type: 'potential', category: '动漫',
+    nickname: '玉瑶爱动漫', douyinId: '3917592755', secUid: 'MS4wLjABAAAAPBVE4fqPPKFCO5VZScAdatIk2Apv4-q-2EENjetvXE4',
+    tags: ['AI动漫'], field: 'AI动漫',
+    fans: '11.4万', likes: '548.2万', videoCount: 2821,
+    avatar: 'https://p3.douyinpic.com/aweme/720x720/aweme-avatar/tos-cn-i-0813c001_ocAAEFLNeCe4Dx8A7fBEY1BlAaEUBCAIxRXlEl.jpeg?from=2956013662',
+    aiVideos: [{ title: 'AI动漫《玉瑶传》', playCount: '42.8万', likeCount: '2.1万' }]
+  },
+  {
+    id: 25, type: 'potential', category: '动漫',
+    nickname: '爱笑动漫', douyinId: '27130425980', secUid: 'MS4wLjABAAAA2S_1QaiIV7yxxrA_foIv5F_-MjWNKPPNAojLvAWOlcQ',
+    tags: ['AI动漫', '解说'], field: 'AI动漫',
+    fans: '23.4万', likes: '383.7万', videoCount: 354,
+    avatar: 'https://p3.douyinpic.com/aweme/720x720/aweme-avatar/tos-cn-avt-0015_29079280ea9d0c9e2b1c7f84c738f94a.jpeg?from=2956013662',
+    aiVideos: [{ title: 'AI动漫解说', playCount: '35.6万', likeCount: '1.7万' }]
+  },
+  {
+    id: 26, type: 'potential', category: '动漫',
+    nickname: '小糸爱动漫', douyinId: 'manmi3002', secUid: 'MS4wLjABAAAAvlZC7B2FZjiRLohCeDgWn4Qi6uEG-63fb650t_ggupnwfc94ipzQvHIyJRMsFtde',
+    tags: ['AI动漫'], field: 'AI动漫',
+    fans: '16.1万', likes: '243.1万', videoCount: 813,
+    avatar: 'https://p3.douyinpic.com/aweme/720x720/aweme-avatar/tos-cn-i-0813_o8wuGMAevDAFuA2JAiANQ0I1bgBHKEBaHnD7ee.jpeg?from=2956013662',
+    aiVideos: [{ title: 'AI动漫推荐', playCount: '28.5万', likeCount: '1.3万' }]
+  },
+  {
+    id: 27, type: 'potential', category: '动漫',
+    nickname: '爆更工作室', douyinId: 'BaoGengGZS', secUid: 'MS4wLjABAAAAsZuBZ7MuadcU6DYGGBU0H-cdVw3XGpvt1yG5rXXEOVZxtta92f3t4bpBg-pcJMk1',
+    tags: ['AI漫剧'], field: 'AI动漫',
+    fans: '5.2万', likes: '145万', videoCount: 17,
+    avatar: 'https://p3.douyinpic.com/aweme/720x720/aweme-avatar/tos-cn-i-0813c000-ce_ocDIm83QIurB8i4EvgVGeJw7EFALAAPgAfwSQf.jpeg?from=2956013662',
+    aiVideos: [{ title: 'AI漫剧《爆更日常》', playCount: '15.2万', likeCount: '7,200' }]
+  },
+  {
+    id: 28, type: 'potential', category: '动漫',
+    nickname: '动漫ai', douyinId: '6685270940', secUid: 'MS4wLjABAAAA5YlgKAzJnSzJBHRyaM8qSGkpcQ-JjBiH008PT72Gf8B_NgAKbL3rtbQPlMNLjLbh',
+    tags: ['AI动漫'], field: 'AI动漫',
+    fans: '4.3万', likes: '41.5万', videoCount: 15,
+    avatar: 'https://p3.douyinpic.com/aweme/720x720/aweme-avatar/tos-cn-i-0813_ogAAuIAnqupABCc7YcEnCFqA9AaDEg2NfEfCmd.jpeg?from=2956013662',
+    aiVideos: [{ title: 'AI动漫创作', playCount: '8.5万', likeCount: '4,000' }]
+  },
+  {
+    id: 29, type: 'potential', category: '少儿',
+    nickname: '少儿近视马叔', douyinId: '7702705022', secUid: 'MS4wLjABAAAAc36-J0j0rrHjb-wfzQMc7HWgyC8wC6flswvI4yxMsuU',
+    tags: ['AI医疗', '眼视光'], field: 'AI少儿',
+    fans: '21.4万', likes: '39万', videoCount: 134,
+    avatar: 'https://p3.douyinpic.com/aweme/720x720/aweme-avatar/tos-cn-avt-0015_0f2a2ffca4bbfb44aa688d90fb1cf095.jpeg?from=2956013662',
+    aiVideos: [{ title: 'AI护眼科普', playCount: '18.5万', likeCount: '8,600' }]
+  },
+  {
+    id: 30, type: 'potential', category: '少儿',
+    nickname: '麦思AI', douyinId: '9466462585', secUid: 'MS4wLjABAAAACnSmeXJOTjzrcvbJknuU8MaDW4ep1WQMb2MYK_aeU1CIZJU5IFLlY2dIcoeEwWtc',
+    tags: ['AI教育'], field: 'AI少儿',
+    fans: '0.9万', likes: '1.7万', videoCount: 113,
+    avatar: 'https://p3.douyinpic.com/aweme/720x720/aweme-avatar/tos-cn-avt-0015_9f75a2534ab3c23457c2b624a657c5e5.jpeg?from=2956013662',
+    aiVideos: [{ title: 'AI儿童教育', playCount: '5,200', likeCount: '240' }]
+  },
+  {
+    id: 31, type: 'potential', category: '亲子',
+    nickname: '米可可亲子乐园', douyinId: 'micostyle88', secUid: 'MS4wLjABAAAAo9ZpStG41Z3q9f4UU296bHYv78r_mcRFMg12HPEBR88',
+    tags: ['AI亲子', '乐园'], field: 'AI亲子',
+    fans: '19万', likes: '198万', videoCount: 1333,
+    avatar: 'https://p3.douyinpic.com/aweme/720x720/aweme-avatar/tos-cn-i-0813_3b2ee924c13b4363bd05e3a4169f669d.jpeg?from=2956013662',
+    aiVideos: [{ title: 'AI亲子互动', playCount: '22.5万', likeCount: '1.1万' }]
+  },
+  {
+    id: 32, type: 'potential', category: '体育',
+    nickname: '六六爱体育', douyinId: 'liuliukanqiu', secUid: 'MS4wLjABAAAAzHn-mevxKmGe96ukxZYu9fqYLFEFd7Yg15YHIZFRgLk',
+    tags: ['AI体育'], field: 'AI体育',
+    fans: '3.4万', likes: '56万', videoCount: 523,
+    avatar: 'https://p3.douyinpic.com/aweme/720x720/aweme-avatar/tos-cn-avt-0015_3b5b3b8252ae4dedf623f63c7b09e5b5.jpeg?from=2956013662',
+    aiVideos: [{ title: 'AI体育分析', playCount: '12.5万', likeCount: '5,800' }]
+  },
+  {
+    id: 33, type: 'potential', category: '体育',
+    nickname: 'ai运动', douyinId: 'dymuk9c80v6o', secUid: 'MS4wLjABAAAAd0YoemtZkBicCfLXPdHhJJDNFc8eAxAEDnjUeNnGRnaay_jqu4NSsmKqTT0iLJpT',
+    tags: ['AI运动'], field: 'AI体育',
+    fans: '0.1万', likes: '9.8万', videoCount: 48,
+    avatar: 'https://p3.douyinpic.com/aweme/720x720/aweme-avatar/tos-cn-i-0813_b16fa5ebc3d14073baa0a20abefe2e41.jpeg?from=2956013662',
+    aiVideos: [{ title: 'AI运动教学', playCount: '3.2万', likeCount: '1,500' }]
+  },
+  {
+    id: 34, type: 'potential', category: '体育',
+    nickname: 'Ai运动', douyinId: 'Ai_sportsxm', secUid: 'MS4wLjABAAAAE0KzbVMGYfSToW7Zrz0ctQukEl8q2l35zbFRC94ObSA',
+    tags: ['AI运动'], field: 'AI体育',
+    fans: '0.1万', likes: '0.3万', videoCount: 52,
+    avatar: 'https://p3.douyinpic.com/aweme/720x720/aweme-avatar/mosaic-legacy_2df73000710135690d7e7.jpeg?from=2956013662',
+    aiVideos: [{ title: 'AI运动资源', playCount: '1.8万', likeCount: '850' }]
+  },
+  {
+    id: 35, type: 'potential', category: '体育',
+    nickname: 'AI运动', douyinId: 'AIyundong767', secUid: 'MS4wLjABAAAA78F_C3_IAOcESLGBW5EP44LPJm5LYxOEEAoA2xfvPZA',
+    tags: ['AI运动'], field: 'AI体育',
+    fans: '0.05万', likes: '0.6万', videoCount: 189,
+    avatar: 'https://p11.douyinpic.com/aweme/720x720/aweme-avatar/tos-cn-i-0813c001_osfkyFE7EDMDfOBrOAAVAat4IfaUgRBEalQAzA.jpeg?from=2956013662',
+    aiVideos: [{ title: 'AI健身指导', playCount: '8,500', likeCount: '400' }]
+  },
+  {
+    id: 36, type: 'potential', category: '生活',
+    nickname: '菲菲爱穿搭', douyinId: 'oujia1236', secUid: 'MS4wLjABAAAAX1Ag5xXOh7VFvNcXwNT8auKe9m_sDm7G8wivq28wCOo',
+    tags: ['AI穿搭'], field: 'AI生活',
+    fans: '28.4万', likes: '42.7万', videoCount: 2701,
+    avatar: 'https://p3.douyinpic.com/aweme/720x720/aweme-avatar/tos-cn-avt-0015_67608df73ccfd25912c270bd383f71fb.jpeg?from=2956013662',
+    aiVideos: [{ title: 'AI穿搭推荐', playCount: '35.6万', likeCount: '1.7万' }]
+  },
+  {
+    id: 37, type: 'potential', category: '生活',
+    nickname: '爱穿搭酱', douyinId: 'shanshan.3325', secUid: 'MS4wLjABAAAAxS9H8cWL7fI7mJybSv4acTkyRiiFUBxlxTy8QJoYQseQ1GilVg3JElkPjsa_zDCg',
+    tags: ['AI穿搭', '生活'], field: 'AI生活',
+    fans: '14万', likes: '301.6万', videoCount: 612,
+    avatar: 'https://p11.douyinpic.com/aweme/720x720/aweme-avatar/mosaic-legacy_30fd80009feb70221599c.jpeg?from=2956013662',
+    aiVideos: [{ title: 'AI生活穿搭', playCount: '28.5万', likeCount: '1.3万' }]
+  },
+  {
+    id: 38, type: 'potential', category: '生活',
+    nickname: '菲菲爱美食', douyinId: 'yujiehaowu2011', secUid: 'MS4wLjABAAAAh9-VKTFe_EmJoewoIGHMkMz72OUyJixzfDze62KIKG8',
+    tags: ['AI美食'], field: 'AI生活',
+    fans: '13.4万', likes: '17.7万', videoCount: 34,
+    avatar: 'https://p3.douyinpic.com/aweme/720x720/aweme-avatar/tos-cn-i-0813_a0c8c1a53a814cffb4fb83da73fb9b03.jpeg?from=2956013662',
+    aiVideos: [{ title: 'AI美食制作', playCount: '15.2万', likeCount: '7,200' }]
+  },
+  {
+    id: 39, type: 'potential', category: '生活',
+    nickname: '美食AI', douyinId: 'chibo', secUid: 'MS4wLjABAAAA1b8p7-Zxgz3Mkwg3tiQxVwD9_dARfCY6tJUwKc_wz2k',
+    tags: ['AI美食', '创意'], field: 'AI生活',
+    fans: '3.2万', likes: '10.4万', videoCount: 217,
+    avatar: 'https://p26.douyinpic.com/aweme/720x720/aweme-avatar/tos-cn-i-0813_oE8gMIMxvDYAAAimiPsEUAxCIPAaBgaamWLpA.jpeg?from=2956013662',
+    aiVideos: [{ title: 'AI创意美食', playCount: '8.5万', likeCount: '4,000' }]
+  },
+  {
+    id: 40, type: 'potential', category: '其他',
+    nickname: '爱创作', douyinId: 'mm520530540', secUid: 'MS4wLjABAAAAeSIyj45YxZw68wxQ7K_t-VgbOa4wyvk8gYSLo-APqV0',
+    tags: ['AI创作'], field: 'AIGC',
+    fans: '24.2万', likes: '189.2万', videoCount: 2071,
+    avatar: 'https://p11.douyinpic.com/aweme/720x720/aweme-avatar/tos-cn-i-0813c001_oIAUCA20XgPPcJhiSIXlHaIlBAIagi3VWACAE.jpeg?from=2956013662',
+    aiVideos: [{ title: 'AI创作教程', playCount: '42.8万', likeCount: '2.1万' }]
+  },
+  {
+    id: 41, type: 'potential', category: '其他',
+    nickname: 'AI笔记本', douyinId: '20260205AIXKB', secUid: 'MS4wLjABAAAAJWbolfJhgx6mhahO0s45kM0qwfc7lXI-ur6ZAg-JN60NvKKB7ey2SbkWFnGU6VYn',
+    tags: ['AI视频', '原创'], field: 'AIGC',
+    fans: '23.9万', likes: '357.4万', videoCount: 121,
+    avatar: 'https://p3.douyinpic.com/aweme/720x720/aweme-avatar/tos-cn-avt-0015_56ee161b71a4047af5d7c40ef3175c3c.jpeg?from=2956013662',
+    aiVideos: [{ title: 'AI原创视频', playCount: '38.5万', likeCount: '1.8万' }]
+  },
+  {
+    id: 42, type: 'potential', category: '其他',
+    nickname: 'ai创作动画', douyinId: 'zhengzk458000', secUid: 'MS4wLjABAAAAHe0BdPbnkQ2MmaJXiALdugqIAz4FXkxE93bapj3QVO3z4NMlSGpe8JmVGtNA2aob',
+    tags: ['AI动画', '潮汕'], field: 'AIGC',
+    fans: '5.5万', likes: '53万', videoCount: 434,
+    avatar: 'https://p11.douyinpic.com/aweme/720x720/aweme-avatar/tos-cn-avt-0015_3a8bf81cef8c9d8bddcc9fd72899ff0d.jpeg?from=2956013662',
+    aiVideos: [{ title: '潮汕AI动画', playCount: '15.6万', likeCount: '7,500' }]
+  },
+  {
+    id: 43, type: 'potential', category: '其他',
+    nickname: 'AI创作', douyinId: 'hsl0527', secUid: 'MS4wLjABAAAAyGI35eOTXgwcs0gsl9zjsfgEnOxiXawjLVnWeSIOeLA',
+    tags: ['AI国漫'], field: 'AIGC',
+    fans: '1.3万', likes: '10.1万', videoCount: 4,
+    avatar: 'https://p3.douyinpic.com/aweme/720x720/aweme-avatar/tos-cn-i-0813c001_ocfB3HL2pIG63DAApmAAe2IfTYQd7KlBEAnJmE.jpeg?from=2956013662',
+    aiVideos: [{ title: 'AI国漫创作', playCount: '5,200', likeCount: '250' }]
+  }
+];
+
+// 真实数据 - AI高粉创作者（微电影）
+let highfansCreators = [
+  {
+    id: 101, type: 'highfans', category: '微电影',
+    nickname: '编导李让', douyinId: 'biandaolirang', secUid: 'MS4wLjABAAAAPg0ctL2P0J9FMoDoYdFJyxuSH4hA9SDCbZiqTQTfDLs',
+    tags: ['AI导演', '商汤Seko AI签约导演'], field: 'AI微电影',
+    fans: '38.8万', likes: '1414.5万', videoCount: 29,
+    avatar: 'https://p3.douyinpic.com/aweme/720x720/aweme-avatar/tos-cn-i-0813c000-ce_o4EbIPAPMgRIC5Zxpxoiti824LBa9YAKAAjAI.jpeg?from=2956013662',
+    aiVideos: [
+      { title: '短片《榜样》· 致敬雷锋', playCount: '183.0万', likeCount: '8.5万' },
+      { title: '第一人称短片《告别》我们的父辈', playCount: '466.4万', likeCount: '22.1万' },
+      { title: '第一人称短片《告别》，体验人生不同阶段的告别', playCount: '338.5万', likeCount: '16.2万' },
+      { title: '母亲节温情短片《暴走妈妈》', playCount: '30.7万', likeCount: '1.5万' },
+      { title: '纪念两弹元勋邓稼先短片《记得你》', playCount: '5.3万', likeCount: '2,600' }
+    ]
+  },
+  {
+    id: 102, type: 'highfans', category: '微电影',
+    nickname: '旧梦留声机', douyinId: '50880435438', secUid: 'MS4wLjABAAAAHzQqEC3IyGSDuYkOv9bFe8mYxXTZh8GsX60lINFHm-3gkfiGJG5EUkaccHJdMQr4',
+    tags: ['AI生成', '故事短片'], field: 'AI微电影',
+    fans: '32.8万', likes: '1340万', videoCount: 6,
+    avatar: 'https://p26.douyinpic.com/aweme/720x720/aweme-avatar/tos-cn-avt-0015_81c4d0e5ee944ed0f29ae1613e800c1d.jpeg?from=2956013662',
+    aiVideos: [
+      { title: '这条视频我花了几十个小时做出来，但他们的寻亲路花了几十年', playCount: '806.0万', likeCount: '38.2万' },
+      { title: '爷爷，马上要放假了，我又想你了', playCount: '338.8万', likeCount: '16.1万' },
+      { title: '她用一个冬天的时间，把缺席我的时光都补回来，然后又偷偷离开', playCount: '103.3万', likeCount: '4.9万' },
+      { title: '"灵华，你的粉色头发很好看"', playCount: '49.3万', likeCount: '2.3万' },
+      { title: '不必费心挑选，你回家的脚步，就是妈妈最好的礼物', playCount: '23.7万', likeCount: '1.1万' }
+    ]
+  },
+  {
+    id: 103, type: 'highfans', category: '微电影',
+    nickname: '明明是AI呀', douyinId: '29221592985', secUid: 'MS4wLjABAAAADv9eTG0ODTf94awJCnp8r9-nB-gkKQ14JI8aCpKSIekCUyrcHnlPV3KkEi4A202f',
+    tags: ['AI演员', '片场花絮'], field: 'AI微电影',
+    fans: '89.5万', likes: '358.3万', videoCount: 8,
+    avatar: 'https://p3.douyinpic.com/aweme/720x720/aweme-avatar/tos-cn-avt-0015_efeda976e952509d48c84bd854b7b549.jpeg?from=2956013662',
+    aiVideos: [
+      { title: '今天的打戏，我直接给到一个夯', playCount: '5.4万', likeCount: '2,600' },
+      { title: '恶毒女配也太爽啦，最爽的一集', playCount: '3.6万', likeCount: '1,700' },
+      { title: 'AI演员都日入五位数了？！', playCount: '3.2万', likeCount: '1,500' },
+      { title: '揭秘跑龙套日入3位数的一天！', playCount: '2.2万', likeCount: '1,000' },
+      { title: '你看过最癫的狗血短剧是哪部？', playCount: '1.6万', likeCount: '750' }
+    ]
+  },
+  {
+    id: 104, type: 'highfans', category: '微电影',
+    nickname: '零号工坊', douyinId: 'tugepaopaoba123', secUid: 'MS4wLjABAAAAC4nNJmLqNQ2-kYZBH8dOgepE54NQmH9lxO36gdtxUz8AgVZmT4FVvuJ_b8DNtpAg',
+    tags: ['AI生成', '算力讲故事'], field: 'AI微电影',
+    fans: '172.8万', likes: '3340.9万', videoCount: 8,
+    avatar: 'https://p11.douyinpic.com/aweme/720x720/aweme-avatar/tos-cn-avt-0015_61d3688e8859c59f9cd216c990d0adc1.jpeg?from=2956013662',
+    aiVideos: [
+      { title: '每个人都值得无条件被爱', playCount: '37.5万', likeCount: '1.8万' },
+      { title: '当00后成为了父母', playCount: '6.7万', likeCount: '3,200' },
+      { title: '即刻出发，去见未经雕琢的自己', playCount: '8,165', likeCount: '380' },
+      { title: '所见，不止眼前', playCount: '6,720', likeCount: '310' }
+    ]
+  },
+  {
+    id: 105, type: 'highfans', category: '微电影',
+    nickname: '笑笑AI剧场', douyinId: '37156064719', secUid: 'MS4wLjABAAAAT3v_2WW-9IgRuU3y80FgsSWEnfH99jhNQNkJENYSlI5whPZzZl_UNY36waAGAQ7w',
+    tags: ['AI剧场', '搞笑'], field: 'AI微电影',
+    fans: '32.6万', likes: '1936.8万', videoCount: 122,
+    avatar: 'https://p3.douyinpic.com/aweme/720x720/aweme-avatar/tos-cn-avt-0015_9a1cec183a0894e9c0db7d015fd14bdc.jpeg?from=2956013662',
+    aiVideos: [
+      { title: '当你有一个人民的班长', playCount: '60.4万', likeCount: '2.9万' },
+      { title: '父母眼中的理想孩子！', playCount: '53.7万', likeCount: '2.6万' },
+      { title: '父母眼中的理想孩子belike（二）！', playCount: '35.5万', likeCount: '1.7万' },
+      { title: '人民的班长belike', playCount: '33.0万', likeCount: '1.6万' },
+      { title: '当你是全校唯一的走读生！', playCount: '30.9万', likeCount: '1.5万' }
+    ]
+  },
+  {
+    id: 106, type: 'highfans', category: '微电影',
+    nickname: '见脚青AI', douyinId: '54923472952', secUid: 'MS4wLjABAAAATWTutwozq8NGXFm7aUeKeSbJujJlnlq39uqcap_l0mKQbGzQVQkb0KkVRO4orMdx',
+    tags: ['AI绘梦师', '怪诞美学'], field: 'AI微电影',
+    fans: '35.6万', likes: '530.5万', videoCount: 310,
+    avatar: 'https://p11.douyinpic.com/aweme/720x720/aweme-avatar/tos-cn-avt-0015_4d877caabb5df418ccf1e549dbe0ce53.jpeg?from=2956013662',
+    aiVideos: [
+      { title: '【一间梦】戏园雾梦', playCount: '43.5万', likeCount: '2.1万' },
+      { title: '第3集 | 【一间梦】白色兔子', playCount: '29.1万', likeCount: '1.4万' },
+      { title: '【一间梦】洗花池', playCount: '15.2万', likeCount: '7,300' },
+      { title: '【一间梦】悬吊', playCount: '9,297', likeCount: '440' },
+      { title: '【一间梦】人鱼困', playCount: '8,080', likeCount: '380' }
+    ]
+  },
+  {
+    id: 107, type: 'highfans', category: '短剧',
+    nickname: 'AI短剧', douyinId: '21905934851', secUid: 'MS4wLjABAAAAdqIU_D6mvUrtYGmq1hu4tGJEkQBuFeY4L71M3Dp0JWfwwwnvyObma1-u3ZgfC9uf',
+    tags: ['AI短剧', '原创音乐'], field: 'AI短剧',
+    fans: '295.3万', likes: '1034万', videoCount: 0,
+    avatar: 'https://p3.douyinpic.com/aweme/720x720/aweme-avatar/tos-cn-i-0813c000-ce_oYAABBEIEEwpgS3fhYFnczDa1uLelAAJDCG9Ai.jpeg?from=2956013662',
+    aiVideos: [{ title: 'AI短剧作品', playCount: '156.8万', likeCount: '7.5万' }]
+  },
+  {
+    id: 108, type: 'highfans', category: '短剧',
+    nickname: '导演饶露', douyinId: '', secUid: 'MS4wLjABAAAA-cQmJzwA54ZfGIN6j5O28rQ5YcihF7vnti_-aeXYPpU',
+    tags: ['AI导演', '教学'], field: 'AI短剧',
+    fans: '118.7万', likes: '1360万', videoCount: 3297,
+    avatar: 'https://p3.douyinpic.com/aweme/720x720/aweme-avatar/tos-cn-avt-0015_a6287b3ccce135b68d44eea47f11e7fb.jpeg?from=2956013662',
+    aiVideos: [{ title: 'AI导演教学', playCount: '85.2万', likeCount: '4.1万' }]
+  },
+  {
+    id: 109, type: 'highfans', category: '短剧',
+    nickname: '张凯翔原创AIGC短剧', douyinId: 'xjjhcm', secUid: 'MS4wLjABAAAAdDX0HzHiKLVAffUO-NmXigpDN6uiFpvWlLQ2i5hGKM8',
+    tags: ['AIGC', '编剧'], field: 'AI短剧',
+    fans: '104.7万', likes: '798.4万', videoCount: 40,
+    avatar: 'https://p11.douyinpic.com/aweme/720x720/aweme-avatar/tos-cn-avt-0015_1203768d6ec49ebd3e908f7c0f5ad66b.jpeg?from=2956013662',
+    aiVideos: [{ title: 'AIGC短剧《华夏传奇》', playCount: '62.5万', likeCount: '3.0万' }]
+  },
+  {
+    id: 110, type: 'highfans', category: '剧集',
+    nickname: '赛博杰克AIGC', douyinId: 'XJ557XJ', secUid: 'MS4wLjABAAAA_u0pfaqu7J40avfhLs0n-4T633NWNZ-LEI3nSNsI6FWd773Ne7nha-tBBzy15eZG',
+    tags: ['AIGC', '原创'], field: 'AI剧集',
+    fans: '158.7万', likes: '1437万', videoCount: 883,
+    avatar: 'https://p11.douyinpic.com/aweme/720x720/aweme-avatar/tos-cn-avt-0015_d8f3caf15549bcde67ef00eb854fca42.jpeg?from=2956013662',
+    aiVideos: [{ title: 'AIGC原创剧集', playCount: '95.6万', likeCount: '4.6万' }]
+  },
+  {
+    id: 111, type: 'highfans', category: '剧集',
+    nickname: 'AI造梦研究所', douyinId: 'aidreamcode', secUid: 'MS4wLjABAAAAs5WKfgm8bK_G1oAK6QdboIrBNTRV_mGsKdLuEaPX-Zw',
+    tags: ['AIGC', '每一帧都是热爱'], field: 'AI剧集',
+    fans: '52.4万', likes: '910.1万', videoCount: 336,
+    avatar: 'https://p3.douyinpic.com/aweme/720x720/aweme-avatar/tos-cn-avt-0015_d7dbf2436eccf0b8bccc89f829632018.jpeg?from=2956013662',
+    aiVideos: [{ title: 'AI造梦剧集', playCount: '52.8万', likeCount: '2.5万' }]
+  },
+  {
+    id: 112, type: 'highfans', category: '纪录片',
+    nickname: '秋芝2046', douyinId: '32571643812', secUid: 'MS4wLjABAAAAwbbVuf1W2DdgRe0xCa0oxg1ZIHbzuiTzyjq3NcOVgBuu6qIidYlMYqbL3ZFY2swu',
+    tags: ['AI科普', '后期'], field: 'AI纪录片',
+    fans: '119.4万', likes: '654.5万', videoCount: 104,
+    avatar: 'https://p11.douyinpic.com/aweme/720x720/aweme-avatar/tos-cn-avt-0015_1aea2b7ed4b464ba6ca670ead9d89ce8.jpeg?from=2956013662',
+    aiVideos: [{ title: 'AI科普纪录片', playCount: '78.5万', likeCount: '3.8万' }]
+  },
+  {
+    id: 113, type: 'highfans', category: '纪录片',
+    nickname: '大圆镜科普', douyinId: '94738657685', secUid: 'MS4wLjABAAAAbdDeOuCpBvAHVWtJs1fhx0Ukjv5F9_COIUu2ThiV6hw',
+    tags: ['AI科普', '硬核'], field: 'AI纪录片',
+    fans: '142.1万', likes: '1275.9万', videoCount: 110,
+    avatar: 'https://p26.douyinpic.com/aweme/720x720/aweme-avatar/tos-cn-i-c9aec8xkvj_8e7070e1b1a24a159e8950120e8eb843.jpeg?from=2956013662',
+    aiVideos: [{ title: '硬核AI科普', playCount: '92.3万', likeCount: '4.4万' }]
+  },
+  {
+    id: 114, type: 'highfans', category: '纪录片',
+    nickname: '王小窗', douyinId: 'wangxiaochuang77', secUid: 'MS4wLjABAAAA2lv8waF8sKt_zGGEMYlvRmw73EqNWwxKLHduPYsHYH8',
+    tags: ['AI读书', '历史'], field: 'AI纪录片',
+    fans: '225万', likes: '505.8万', videoCount: 76,
+    avatar: 'https://p3.douyinpic.com/aweme/720x720/aweme-avatar/tos-cn-i-0813c000-ce_o4AAniDlJcvZBiPAevkCeaA3wni8EDAIM0FhEp.jpeg?from=2956013662',
+    aiVideos: [{ title: 'AI读书纪录片', playCount: '125.6万', likeCount: '6.0万' }]
+  },
+  {
+    id: 115, type: 'highfans', category: '文化',
+    nickname: '认知便利店M!', douyinId: '117432260', secUid: 'MS4wLjABAAAAunHYdY4NGYEF7jlLFsLD6oVYYHb2WswuCJHFI8YaNOE',
+    tags: ['AI知识', '科普'], field: 'AI文化',
+    fans: '192.4万', likes: '853万', videoCount: 161,
+    avatar: 'https://p3.douyinpic.com/aweme/720x720/aweme-avatar/tos-cn-avt-0015_665c2ef50c7393738af55acb11abef44.jpeg?from=2956013662',
+    aiVideos: [{ title: 'AI知识科普', playCount: '108.5万', likeCount: '5.2万' }]
+  },
+  {
+    id: 116, type: 'highfans', category: '文化',
+    nickname: '即梦AI', douyinId: '28943154636', secUid: 'MS4wLjABAAAATAf2FKPSpZx_TdDWzwzNlznaEE6HttAqJgrnRPGdW24adAIlxfGeasDraUIR5JRp',
+    tags: ['AI创作', '即梦'], field: 'AI文化',
+    fans: '75.8万', likes: '607.9万', videoCount: 239,
+    avatar: 'https://p26.douyinpic.com/aweme/720x720/aweme-avatar/douyin-user-image-file_f76d787ff9f8c2f4fd876cee2d284eb9.jpeg?from=2956013662',
+    aiVideos: [{ title: '即梦AI创作', playCount: '65.2万', likeCount: '3.1万' }]
+  },
+  {
+    id: 117, type: 'highfans', category: '文化',
+    nickname: '李美儿', douyinId: '60499980854', secUid: 'MS4wLjABAAAAapfE74E8f7iNzx8IfMMvCmlTwwyq0oaWTngdg8T8RjybgCAyTkR893N4cXRWhh3m',
+    tags: ['AI MV', '独创'], field: 'AI文化',
+    fans: '67万', likes: '713万', videoCount: 94,
+    avatar: 'https://p26.douyinpic.com/aweme/720x720/aweme-avatar/tos-cn-i-0813c000-ce_owSADuA4ihjALA2BBMgrav4iEARA7mV2PnIAP.jpeg?from=2956013662',
+    aiVideos: [{ title: 'AI MV作品', playCount: '58.6万', likeCount: '2.8万' }]
+  },
+  {
+    id: 118, type: 'highfans', category: '游戏',
+    nickname: '小八阿', douyinId: 'budongsh1', secUid: 'MS4wLjABAAAAILCYjqx2JM86R3oXuA-hKDdlF6enbhmsIf1qKkhmuKR7IEl5d-VvQx7ZgrFcUj_a',
+    tags: ['AI游戏', '电竞'], field: 'AI游戏',
+    fans: '45万', likes: '959万', videoCount: 314,
+    avatar: 'https://p3.douyinpic.com/aweme/720x720/aweme-avatar/tos-cn-avt-0015_f6585c1d7eb6fa042966df69f9512640.jpeg?from=2956013662',
+    aiVideos: [{ title: 'AI游戏解说', playCount: '72.5万', likeCount: '3.5万' }]
+  },
+  {
+    id: 119, type: 'highfans', category: '动漫',
+    nickname: '小可爱动漫', douyinId: '3792203732', secUid: 'MS4wLjABAAAAHRn0Nz6RMX2ULpsUVkWrpui6s3KGrWdvS-aSPMM77wI',
+    tags: ['AI动漫'], field: 'AI动漫',
+    fans: '115.3万', likes: '452.7万', videoCount: 391,
+    avatar: 'https://p3.douyinpic.com/aweme/720x720/aweme-avatar/tos-cn-avt-0015_934cc89ca8b7da95c0a10052e5345ba0.jpeg?from=2956013662',
+    aiVideos: [{ title: 'AI动漫《小可爱》', playCount: '98.5万', likeCount: '4.7万' }]
+  },
+  {
+    id: 120, type: 'highfans', category: '动漫',
+    nickname: '非正常动漫研究中心_', douyinId: 'm9598518', secUid: 'MS4wLjABAAAAAiz0n8ob89ZV7vepIHoC_ReYPRFFmfM1Fy3nbYJMIJE',
+    tags: ['AI动漫', '造番'], field: 'AI动漫',
+    fans: '90.8万', likes: '1850.2万', videoCount: 5,
+    avatar: 'https://p3.douyinpic.com/aweme/720x720/aweme-avatar/tos-cn-avt-0015_11bb137260fc0829c2f3d4718722ce7d.jpeg?from=2956013662',
+    aiVideos: [{ title: 'AI造番研究', playCount: '85.6万', likeCount: '4.1万' }]
+  },
+  {
+    id: 121, type: 'highfans', category: '亲子',
+    nickname: '主持人周洲', douyinId: 'youyang100s', secUid: 'MS4wLjABAAAALSMpPOGJuUVE-i6x-q8VCfZuGymx-gf74Dn2XxMgYP2OZvVz8DWd8Xav-weUUjiT',
+    tags: ['AI对话玩具', '亲子'], field: 'AI亲子',
+    fans: '989.5万', likes: '6520.5万', videoCount: 2250,
+    avatar: 'https://p3.douyinpic.com/aweme/720x720/aweme-avatar/tos-cn-avt-0015_31abad52acc5030041786349defe1f87.jpeg?from=2956013662',
+    aiVideos: [{ title: 'AI亲子互动', playCount: '356.8万', likeCount: '17.1万' }]
+  },
+  {
+    id: 122, type: 'highfans', category: '亲子',
+    nickname: '林巨家庭教育', douyinId: '1240066119', secUid: 'MS4wLjABAAAAvVhwMmv4Jf0MlM8msAgUZH1e3pTFOtlzmGUlE1VmZQE',
+    tags: ['AI教育', '心理'], field: 'AI亲子',
+    fans: '112.6万', likes: '573.2万', videoCount: 1535,
+    avatar: 'https://p3.douyinpic.com/aweme/720x720/aweme-avatar/tos-cn-i-0813_oci9DFIZ1DvAAOBCCgftiwACAeEkzAudAT2mPA.jpeg?from=2956013662',
+    aiVideos: [{ title: 'AI家庭教育', playCount: '68.5万', likeCount: '3.3万' }]
+  },
+  {
+    id: 123, type: 'highfans', category: '体育',
+    nickname: '天天跳绳App', douyinId: 'tiaoshengTY', secUid: 'MS4wLjABAAAA6sm3n5fEUVdpCLvq34xZkbhhzf48BL5P6s1FN41zpaE',
+    tags: ['AI运动', '体感'], field: 'AI体育',
+    fans: '15.6万', likes: '158.9万', videoCount: 1705,
+    avatar: 'https://p3.douyinpic.com/aweme/720x720/aweme-avatar/tos-cn-i-0813_655e6ba73cfe4e5db49597549c246238.jpeg?from=2956013662',
+    aiVideos: [{ title: 'AI体感运动', playCount: '45.2万', likeCount: '2.2万' }]
+  },
+  {
+    id: 124, type: 'highfans', category: '体育',
+    nickname: '全体育All Sports', douyinId: 'aitiyudemaim', secUid: 'MS4wLjABAAAAe4yDFBYNKilTxzSF-bnDuOvBe-LjPrRIcTJlm33OeGM',
+    tags: ['AI体育'], field: 'AI体育',
+    fans: '11.4万', likes: '1455.4万', videoCount: 5544,
+    avatar: 'https://p3.douyinpic.com/aweme/720x720/aweme-avatar/mosaic-legacy_317260007c3f41b46c2f2.jpeg?from=2956013662',
+    aiVideos: [{ title: 'AI体育综合', playCount: '38.5万', likeCount: '1.8万' }]
+  },
+  {
+    id: 125, type: 'highfans', category: '生活',
+    nickname: '爱生活爱美食', douyinId: 'dyxwd9p7fixb', secUid: 'MS4wLjABAAAAhvshZj5rUdHzNkq-8JxJwx6RTNqGUbSxVJERpjxZkn31hNRQbYvdIFpd0Ax0T5ZA',
+    tags: ['AI美食'], field: 'AI生活',
+    fans: '154.5万', likes: '511.3万', videoCount: 2087,
+    avatar: 'https://p3.douyinpic.com/aweme/720x720/aweme-avatar/hotsoon-avatar_ca49c051855f4b798868facceed8015c.jpeg?from=2956013662',
+    aiVideos: [{ title: 'AI美食创作', playCount: '125.6万', likeCount: '6.0万' }]
+  },
+  {
+    id: 126, type: 'highfans', category: '生活',
+    nickname: 'AI造梦研究所', douyinId: 'aidreamcode', secUid: 'MS4wLjABAAAAs5WKfgm8bK_G1oAK6QdboIrBNTRV_mGsKdLuEaPX-Zw',
+    tags: ['AIGC', '创意'], field: 'AI生活',
+    fans: '52.4万', likes: '910.1万', videoCount: 336,
+    avatar: 'https://p3.douyinpic.com/aweme/720x720/aweme-avatar/tos-cn-avt-0015_d7dbf2436eccf0b8bccc89f829632018.jpeg?from=2956013662',
+    aiVideos: [{ title: 'AI生活创意', playCount: '58.6万', likeCount: '2.8万' }]
+  },
+  {
+    id: 127, type: 'highfans', category: '其他',
+    nickname: '知宙AI', douyinId: 'wanwanzaozao666', secUid: 'MS4wLjABAAAAVopWrXVysG-Tzv2yHkfuLx94efIpDoSl5p96zZZcvzU',
+    tags: ['AI视觉', '创作'], field: 'AIGC',
+    fans: '175.1万', likes: '3291.5万', videoCount: 12,
+    avatar: 'https://p11.douyinpic.com/aweme/720x720/aweme-avatar/tos-cn-avt-0015_09a3015b8d11009c4fa8b3047864038d.jpeg?from=2956013662',
+    aiVideos: [{ title: 'AI视觉创作', playCount: '156.8万', likeCount: '7.5万' }]
+  },
+  {
+    id: 128, type: 'highfans', category: '其他',
+    nickname: 'AIGC实验室', douyinId: 'aigcome123', secUid: 'MS4wLjABAAAABID-oBszHiTlnFvWU0Lr35HAXAkJkIaZRG41nXRMHTg',
+    tags: ['AI数码', '创意'], field: 'AIGC',
+    fans: '115.9万', likes: '1056.2万', videoCount: 13,
+    avatar: 'https://p3.douyinpic.com/aweme/720x720/aweme-avatar/tos-cn-avt-0015_ff6ea0747f6d504816042f5e14136acf.jpeg?from=2956013662',
+    aiVideos: [{ title: 'AIGC数码创意', playCount: '98.5万', likeCount: '4.7万' }]
+  },
+  {
+    id: 129, type: 'highfans', category: '其他',
+    nickname: 'Aigc幻觉社', douyinId: 'xiao123_123q', secUid: 'MS4wLjABAAAAL-z5pQ4WJbE3IpY9kX2KqqjphPFrVs6vmnvoj4FMcDPnBUkbf-X-0CnJAIirJPlE',
+    tags: ['AI视觉', '荒诞'], field: 'AIGC',
+    fans: '77.3万', likes: '835.6万', videoCount: 13,
+    avatar: 'https://p11.douyinpic.com/aweme/720x720/aweme-avatar/tos-cn-i-0813c001_oc6nWFSiAseNAIrEgCi0AUDBg0N2AAZlvdeAY8.jpeg?from=2956013662',
+    aiVideos: [{ title: 'AI荒诞视觉', playCount: '72.5万', likeCount: '3.5万' }]
+  },
+  {
+    id: 130, type: 'highfans', category: '其他',
+    nickname: 'AIGC漫剧阳阳', douyinId: '676255496PS', secUid: 'MS4wLjABAAAA8tzj0IQ3xzvcnn9NcPES-SJoxVUAlLENuFaPy1GmGPw',
+    tags: ['AI漫剧'], field: 'AIGC',
+    fans: '70.5万', likes: '1021.3万', videoCount: 31,
+    avatar: 'https://p3.douyinpic.com/aweme/720x720/aweme-avatar/tos-cn-i-0813_oYgAui190AA0pkWxABCzCtI0iAIEDIfeCA75m6.jpeg?from=2956013662',
+    aiVideos: [{ title: 'AIGC漫剧', playCount: '65.2万', likeCount: '3.1万' }]
+  },
+  {
+    id: 131, type: 'highfans', category: '其他',
+    nickname: 'AIGC造镜', douyinId: 'Plushenuuuu', secUid: 'MS4wLjABAAAAsEtvC3_n393lEihVUwDZ7MCtIIJPVke2clJZZRAFPNSkUX_GtCCmiaxXRyXJUzjb',
+    tags: ['AI视觉', '画面实验室'], field: 'AIGC',
+    fans: '55.8万', likes: '1085.1万', videoCount: 12,
+    avatar: 'https://p11.douyinpic.com/aweme/720x720/aweme-avatar/tos-cn-i-0813c000-ce_o0Z08AB0EECiADygfAAwINAir6nZKlVcjQtenT.jpeg?from=2956013662',
+    aiVideos: [{ title: 'AI造镜实验', playCount: '58.6万', likeCount: '2.8万' }]
+  },
+  {
+    id: 132, type: 'highfans', category: '其他',
+    nickname: 'AIGC自修室', douyinId: 'Viamaker', secUid: 'MS4wLjABAAAAXlxmRP992FSTao4bZ6K_pxkIDDHcnNwrYkGvXe0xyxI',
+    tags: ['AI教程', '剪映'], field: 'AIGC',
+    fans: '46万', likes: '97万', videoCount: 223,
+    avatar: 'https://p11.douyinpic.com/aweme/720x720/aweme-avatar/tos-cn-i-c9aec8xkvj_f51d26f8fbb445d5ae07e72b7a78fadb.jpeg?from=2956013662',
+    aiVideos: [{ title: 'AIGC教程', playCount: '42.8万', likeCount: '2.1万' }]
+  }
+];
+
+let allCreators = [...potentialCreators, ...highfansCreators];
+let nextId = 500;
+
+// 初始化头像（真实数据已包含头像URL，无需生成）
+function initAvatars() {
+  // 真实创作者数据已包含头像URL
+}
+initAvatars();
+
+// 渲染品类筛选
+function renderFilterTags() {
+  const container = document.getElementById('filterTags');
+  container.innerHTML = categories.map(cat => {
+    const isAll = cat === '全部';
+    const isActive = currentCategory === cat;
+    let cls = 'filter-tag';
+    if (isAll && isActive) cls += ' all active';
+    else if (isActive) cls += ' normal active';
+    else if (isAll) cls += ' all';
+    else cls += ' normal';
+    return `<span class="${cls}" onclick="switchCategory('${cat}')">${cat}</span>`;
+  }).join('');
+}
+
+// 切换品类
+function switchCategory(cat) {
+  currentCategory = cat;
+  renderFilterTags();
+  renderCards();
+}
+
+// 切换类型
+function switchType(type) {
+  currentType = type;
+  document.querySelectorAll('.nav-item').forEach(el => {
+    el.classList.toggle('active', el.dataset.type === type);
+  });
+  document.getElementById('contentTitle').textContent = type === 'potential' ? 'AI潜力创作者' : 'AI高粉创作者';
+  renderCards();
+}
+
+// 获取抖音主页链接
+function getDouyinHomepage(creator) {
+  if (creator.secUid) {
+    return `https://www.douyin.com/user/${creator.secUid}`;
+  }
+  return `https://www.douyin.com/user/${creator.douyinId}`;
+}
+
+// 渲染卡片
+function renderCards() {
+  const list = document.getElementById('cardList');
+  let filtered = allCreators.filter(c => c.type === currentType);
+  if (currentCategory !== '全部') {
+    filtered = filtered.filter(c => c.category === currentCategory);
+  }
+
+  document.getElementById('contentCount').textContent = `共 ${filtered.length} 位`;
+
+  if (filtered.length === 0) {
+    list.innerHTML = `
+      <div class="empty-state">
+        <div class="empty-state-icon">📂</div>
+        <div class="empty-state-text">该品类暂无数据，请先添加创作者</div>
+      </div>
+    `;
+    return;
+  }
+
+  list.innerHTML = filtered.map((creator, index) => {
+    const homepage = getDouyinHomepage(creator);
+    const videosHtml = creator.aiVideos.map(v => `
+      <div class="video-item">
+        <div class="video-title">${v.title}</div>
+        <div class="video-stats">
+          <span class="video-stat"><span class="video-stat-icon">▶</span> ${v.playCount}</span>
+          <span class="video-stat"><span class="video-stat-icon">❤</span> ${v.likeCount}</span>
+        </div>
+      </div>
+    `).join('');
+
+    const tagsHtml = creator.tags.map(t => `<span class="tag">${t}</span>`).join('');
+
+    return `
+      <div class="creator-card" data-id="${creator.id}">
+        <div class="card-index">${index + 1}</div>
+        <button class="card-delete" onclick="deleteCreator(${creator.id})" title="删除">×</button>
+        <div class="card-body">
+          <div class="card-left">
+            <a href="${homepage}" target="_blank" class="avatar-link">
+              <img class="avatar" src="${creator.avatar}" alt="${creator.nickname}">
+            </a>
+            <a href="${homepage}" target="_blank" class="card-name" title="${creator.nickname}">${creator.nickname}</a>
+            <a href="${homepage}" target="_blank" class="card-id">@${creator.douyinId}</a>
+            <div class="card-tags">${tagsHtml}</div>
+            <span class="field-tag">${creator.field}</span>
+          </div>
+          <div class="card-right">
+            <div class="card-metrics">
+              <div class="metric-item">
+                <span class="metric-label">粉丝数</span>
+                <span class="metric-value">${creator.fans}</span>
+              </div>
+              <div class="metric-item">
+                <span class="metric-label">点赞数</span>
+                <span class="metric-value">${creator.likes}</span>
+              </div>
+              <div class="metric-item">
+                <span class="metric-label">视频数</span>
+                <span class="metric-value">${creator.videoCount}</span>
+              </div>
+            </div>
+            <div class="video-section-title">AI视频作品</div>
+            <div class="video-list">${videosHtml}</div>
+          </div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+// 删除创作者
+function deleteCreator(id) {
+  if (!confirm('确定要删除这位创作者吗？')) return;
+  allCreators = allCreators.filter(c => c.id !== id);
+  renderCards();
+}
+
+// 弹窗控制
+function openModal() {
+  document.getElementById('modalOverlay').classList.add('show');
+  document.getElementById('formType').value = currentType;
+  document.getElementById('formCategory').value = currentCategory === '全部' ? '微电影' : currentCategory;
+}
+function closeModal() {
+  document.getElementById('modalOverlay').classList.remove('show');
+  document.getElementById('addForm').reset();
+  resetVideoForms();
+}
+function closeModalOnOverlay(e) {
+  if (e.target === document.getElementById('modalOverlay')) closeModal();
+}
+
+// 视频表单
+function resetVideoForms() {
+  document.getElementById('videoForms').innerHTML = `
+    <div class="video-form-section">
+      <div class="video-form-title">AI视频 1</div>
+      <div class="form-group">
+        <label class="form-label">视频标题</label>
+        <input type="text" class="form-input video-title" placeholder="请输入视频标题" required>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">播放量</label>
+          <input type="text" class="form-input video-play" placeholder="例如: 68.2万" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">点赞数</label>
+          <input type="text" class="form-input video-like" placeholder="例如: 3.2万" required>
+        </div>
+      </div>
+    </div>
+  `;
+  videoFormCount = 1;
+}
+
+let videoFormCount = 1;
+function addVideoForm() {
+  videoFormCount++;
+  const div = document.createElement('div');
+  div.className = 'video-form-section';
+  div.innerHTML = `
+    <div class="video-form-title">AI视频 ${videoFormCount}</div>
+    <div class="form-group">
+      <label class="form-label">视频标题</label>
+      <input type="text" class="form-input video-title" placeholder="请输入视频标题" required>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">播放量</label>
+        <input type="text" class="form-input video-play" placeholder="例如: 68.2万" required>
+      </div>
+      <div class="form-group">
+        <label class="form-label">点赞数</label>
+        <input type="text" class="form-input video-like" placeholder="例如: 3.2万" required>
+      </div>
+    </div>
+  `;
+  document.getElementById('videoForms').appendChild(div);
+}
+
+// 提交表单
+function handleAddSubmit(e) {
+  e.preventDefault();
+  const type = document.getElementById('formType').value;
+  const category = document.getElementById('formCategory').value;
+  const nickname = document.getElementById('formNickname').value;
+  const douyinId = document.getElementById('formDouyinId').value;
+  const fans = document.getElementById('formFans').value;
+  const likes = document.getElementById('formLikes').value;
+  const videoCount = parseInt(document.getElementById('formVideoCount').value);
+  const field = document.getElementById('formField').value || 'AI' + category;
+  const tagsStr = document.getElementById('formTags').value;
+  const avatar = document.getElementById('formAvatar').value;
+
+  const tags = tagsStr ? tagsStr.split(/[,，]/).map(s => s.trim()).filter(Boolean) : [];
+
+  const videoSections = document.querySelectorAll('.video-form-section');
+  const aiVideos = [];
+  videoSections.forEach(sec => {
+    const title = sec.querySelector('.video-title').value;
+    const playCount = sec.querySelector('.video-play').value;
+    const likeCount = sec.querySelector('.video-like').value;
+    if (title && playCount && likeCount) {
+      aiVideos.push({ title, playCount, likeCount });
+    }
+  });
+
+  const newCreator = {
+    id: nextId++,
+    type,
+    category,
+    nickname,
+    douyinId,
+    tags,
+    field,
+    fans,
+    likes,
+    videoCount,
+    avatar: avatar || generateAvatar(nickname),
+    aiVideos
+  };
+
+  allCreators.push(newCreator);
+  closeModal();
+
+  if (type !== currentType) {
+    switchType(type);
+  } else {
+    renderCards();
+  }
+}
+
+// 初始化
+renderFilterTags();
+renderCards();
+</script>
+</body>
+</html>
